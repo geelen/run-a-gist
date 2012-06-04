@@ -6,5 +6,5 @@ A simple way to get an Angular app running on Heroku with Coffeescript and Haml
 
 * Fork this
 * Clone your repository
-* heroku create
+* heroku create --stack cedar
 * git push heroku master
