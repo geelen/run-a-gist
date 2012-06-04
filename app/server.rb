@@ -6,10 +6,10 @@ require 'haml'
 set :haml, format: :html5
 set :views, File.dirname(__FILE__)
 
-get '/' do
-  haml :index
-end
-
 get '/application.js' do
   coffee :application
+end
+
+get '*' do
+  haml :index
 end
