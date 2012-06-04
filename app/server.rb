@@ -4,7 +4,7 @@ require 'coffee-script'
 require 'haml'
 
 set :haml, format: :html5
-set :views, '.'
+set :views, File.dirname(__FILE__)
 
 get '/' do
   haml :index
