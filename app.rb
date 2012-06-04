@@ -1,5 +1,9 @@
 require 'sinatra'
+require 'sinatra/reloader' if development?
+
+set :haml, format: :html5
+set :views, '.'
 
 get '/' do
-  "Hello, world"
+  haml :index
 end
