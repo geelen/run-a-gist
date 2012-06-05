@@ -1,10 +1,7 @@
-# Angular Demo
+# Run a gist!
 
-A simple way to get an Angular app running on Heroku with Coffeescript and Haml
+This is running at http://run-a-gist.herokuapp.com
 
-## How to use
+Visit http://GIST_ID.run-a-gist.herokuapp.com to execute it. This will look for a index.haml and an application.coffee, render and serve them.
 
-* Fork this
-* Clone your repository
-* heroku create --stack cedar
-* git push heroku master
+For an example, see https://gist.github.com/e6b200de92bfbea61db0 and http://e6b200de92bfbea61db0.run-a-gist.herokuapp.com/
