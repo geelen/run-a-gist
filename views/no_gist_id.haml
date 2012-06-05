@@ -1,0 +1,17 @@
+!!! 5
+%html(ng-app)
+  %head
+    %title Run a Gist!
+    %script(src='http://code.angularjs.org/angular-1.0.0rc10.min.js')
+  %body
+    %h1 Run a Gist!
+    :javascript
+      function FormCtrl($scope) {
+        $scope.goRun = function() {
+          window.location.hostname = $scope.gist_id + "." + window.location.hostname;
+        };
+      };
+    %form(action='' ng-controller='FormCtrl')
+      %label Your GIST id here (needs at least an index.[html|haml] file)
+      %input(type='text' placeholder='SHA or public ID' size=40 ng-model='gist_id')
+      %button(type='submit' ng-click='goRun()') Run it!
