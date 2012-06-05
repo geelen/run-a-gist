@@ -3,6 +3,7 @@ require 'coffee-script'
 require 'haml'
 require 'curb'
 require 'json'
+require 'sass'
 
 def gist_id
   @gist_id ||= request.host[/^(\w+)\./, 1]
@@ -28,9 +29,10 @@ end
 
 COMPILERS = {
   js: {js: -> js { js }, coffee: -> js { CoffeeScript.compile js } },
-  html: {html: -> html { html }, haml: -> html { Haml::Engine.new(html, format: :html5).render }}
+  html: {html: -> html { html }, haml: -> html { Haml::Engine.new(html, format: :html5).render }},
+  css: {css: -> css { css }, scss: -> css { Sass.compile(css, syntax: :scss)}, sass: -> css { Sass.compile(css, syntax: :sass) }}
 }
-TYPES = { js: "application/javascript", html: "text/html" }
+TYPES = { js: "application/javascript", html: "text/html", css: "text/css" }
 
 get '/*' do
   if gist_id
