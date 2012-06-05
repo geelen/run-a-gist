@@ -2,16 +2,23 @@ GEM
   remote: http://rubygems.org/
   specs:
     backports (2.6.1)
+    coderay (1.0.6)
     coffee-script (2.2.0)
       coffee-script-source
       execjs
     coffee-script-source (1.2.0)
+    curb (0.8.0)
     daemons (1.1.8)
     eventmachine (0.12.10)
     execjs (1.3.0)
       multi_json (~> 1.0)
     haml (3.1.4)
+    method_source (0.7.1)
     multi_json (1.2.0)
+    pry (0.9.9.3)
+      coderay (~> 1.0.5)
+      method_source (~> 0.7.1)
+      slop (>= 2.4.4, < 3)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
@@ -28,6 +35,7 @@ GEM
       rack-test
       sinatra (~> 1.3.0)
       tilt (~> 1.3)
+    slop (2.4.4)
     thin (1.3.1)
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)
@@ -39,7 +47,9 @@ PLATFORMS
 
 DEPENDENCIES
   coffee-script
+  curb
   haml
+  pry
   sinatra
   sinatra-contrib
   thin
