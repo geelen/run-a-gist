@@ -4,8 +4,6 @@ require 'haml'
 require 'curb'
 require 'json'
 
-set :haml, format: :html5
-
 def gist_id
   @gist_id ||= request.host[/^(\w+)\./, 1]
 end
@@ -33,10 +31,6 @@ COMPILERS = {
   html: {html: -> html { html }, haml: -> html { Haml::Engine.new(html, format: :html5).render }}
 }
 TYPES = { js: "application/javascript", html: "text/html" }
-
-get 'wat' do
-
-end
 
 get '/*' do
   if gist_id
