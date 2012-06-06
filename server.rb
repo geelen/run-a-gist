@@ -44,7 +44,7 @@ end
 def files
   @files ||= JSON.parse(fetch("https://api.github.com/gists/#{gist_id}")).fetch('files')
 rescue KeyError
-  []
+  {}
 end
 
 def fetch(url)
