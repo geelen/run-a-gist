@@ -28,31 +28,23 @@ end
 def pull_from_gist(filename)
   extension = File.extname(filename).sub(/^\./,'')
 
-  if files.include? filename
-    [TYPES[extension], get_raw(filename)]
+  if files.keys.include? filename
+    [TYPES[extension], files[filename]['content']]
   else
     compiler, source = COMPILERS[extension.to_sym].map do |source_ext, compiler|
-      found_sources = files & ["#{File.basename(filename,".*")}.#{source_ext}", "#{filename}.#{source_ext}"]
+      found_sources = files.keys & ["#{File.basename(filename,".*")}.#{source_ext}", "#{filename}.#{source_ext}"]
       !found_sources.empty? && [compiler, found_sources.first]
     end.compact.first
     if compiler && source
-      [TYPES[extension.to_sym],compiler[get_raw(source)]]
+      [TYPES[extension.to_sym],compiler[files[source]['content']]]
     end
   end
 end
 
 def files
-  @files ||= manifest.fetch('gists').map { |g| g.fetch('files') }.flatten
+  @files ||= JSON.parse(fetch("https://api.github.com/gists/#{gist_id}")).fetch('files')
 rescue KeyError
   []
-end
-
-def manifest
-  @manifest ||= JSON.parse(fetch("http://gist.github.com/api/v1/json/#{gist_id}"))
-end
-
-def get_raw(filename)
-  fetch("http://gist.github.com/raw/#{gist_id}/#{filename}")
 end
 
 def fetch(url)
