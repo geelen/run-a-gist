@@ -28,20 +28,28 @@ rescue KeyError
 end
 
 COMPILERS = {
-  js: {js: -> js { js }, coffee: -> js { CoffeeScript.compile js } },
-  html: {html: -> html { html }, haml: -> html { Haml::Engine.new(html, format: :html5).render }},
-  css: {css: -> css { css }, scss: -> css { Sass.compile(css, syntax: :scss)}, sass: -> css { Sass.compile(css, syntax: :sass) }}
+  js: {coffee: -> js { CoffeeScript.compile js }},
+  html: {haml: -> html { Haml::Engine.new(html, format: :html5).render }},
+  css: {scss: -> css { Sass.compile(css, syntax: :scss) }, sass: -> css { Sass.compile(css, syntax: :sass) }}
 }
-TYPES = { js: "application/javascript", html: "text/html", css: "text/css" }
+TYPES = {js: "application/javascript", html: "text/html", css: "text/css"}
 
 get '/*' do
   if gist_id
-    input = params[:captures].first.empty? ? "index.html" : params[:captures].first
-    extension,name = File.basename(input).reverse.split(/\./,2).map(&:reverse)
-    (COMPILERS[extension.to_sym] || []).each do |source_ext, handler|
-      if files.include? "#{name}.#{source_ext}"
-        content_type TYPES[extension.to_sym]
-        return handler[get_raw("#{name}.#{source_ext}")]
+    filename = File.basename(params[:captures].first)
+    filename = "index.html" if filename.empty?
+    extension, name = filename.reverse.split(/\./, 2).map(&:reverse)
+    if files.include? filename
+      content_type (TYPES[extension.to_sym] || "text/plain")
+      return get_raw(filename)
+    else
+      (COMPILERS[extension.to_sym] || []).each do |source_ext, handler|
+        ["#{name}.#{source_ext}", "#{filename}.#{source_ext}"].each do |source_file|
+          if files.include? source_file
+            content_type (TYPES[extension.to_sym] || "text/plain")
+            return handler[get_raw(source_file)]
+          end
+        end
       end
     end
     status 404
