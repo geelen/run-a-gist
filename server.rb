@@ -1,24 +1,44 @@
-require 'sinatra'
-require 'coffee-script'
-require 'haml'
-require 'curb'
-require 'json'
-require 'sass'
+Bundler.require
 
-def gist_id
-  @gist_id ||= request.host[/^(\w+)\./, 1]
+COMPILERS = Hash.new([]).merge(
+  js: {coffee: -> js { CoffeeScript.compile js }},
+  html: {haml: -> html { Haml::Engine.new(html, format: :html5).render }},
+  css: {scss: -> css { Sass.compile(css, syntax: :scss) }, sass: -> css { Sass.compile(css, syntax: :sass) }}
+)
+TYPES = Hash.new("text/plain").merge(
+  js: "application/javascript", html: "text/html", css: "text/css"
+)
+
+get '/*' do
+  if gist_id
+    filename = File.basename(params[:captures].first)
+    filename = "index.html" if filename.empty?
+    type, content = pull_from_gist(filename)
+    if type && content
+      content_type type
+      content
+    else
+      status 404
+    end
+  else
+    haml :no_gist_id
+  end
 end
 
-def fetch(url)
-  Curl::Easy.perform(url) { |e| e.follow_location = true }.body_str
-end
+def pull_from_gist(filename)
+  extension = File.extname(filename).sub(/^\./,'')
 
-def get_raw(filename)
-  fetch("http://gist.github.com/raw/#{gist_id}/#{filename}")
-end
-
-def manifest
-  @manifest ||= JSON.parse(fetch("http://gist.github.com/api/v1/json/#{gist_id}"))
+  if files.include? filename
+    [TYPES[extension], get_raw(filename)]
+  else
+    compiler, source = COMPILERS[extension.to_sym].map do |source_ext, compiler|
+      found_sources = files & ["#{File.basename(filename,".*")}.#{source_ext}", "#{filename}.#{source_ext}"]
+      !found_sources.empty? && [compiler, found_sources.first]
+    end.compact.first
+    if compiler && source
+      [TYPES[extension.to_sym],compiler[get_raw(source)]]
+    end
+  end
 end
 
 def files
@@ -27,33 +47,18 @@ rescue KeyError
   []
 end
 
-COMPILERS = {
-  js: {coffee: -> js { CoffeeScript.compile js }},
-  html: {haml: -> html { Haml::Engine.new(html, format: :html5).render }},
-  css: {scss: -> css { Sass.compile(css, syntax: :scss) }, sass: -> css { Sass.compile(css, syntax: :sass) }}
-}
-TYPES = {js: "application/javascript", html: "text/html", css: "text/css"}
+def manifest
+  @manifest ||= JSON.parse(fetch("http://gist.github.com/api/v1/json/#{gist_id}"))
+end
 
-get '/*' do
-  if gist_id
-    filename = File.basename(params[:captures].first)
-    filename = "index.html" if filename.empty?
-    extension, name = filename.reverse.split(/\./, 2).map(&:reverse)
-    if files.include? filename
-      content_type (TYPES[extension.to_sym] || "text/plain")
-      return get_raw(filename)
-    else
-      (COMPILERS[extension.to_sym] || []).each do |source_ext, handler|
-        ["#{name}.#{source_ext}", "#{filename}.#{source_ext}"].each do |source_file|
-          if files.include? source_file
-            content_type (TYPES[extension.to_sym] || "text/plain")
-            return handler[get_raw(source_file)]
-          end
-        end
-      end
-    end
-    status 404
-  else
-    haml :no_gist_id
-  end
+def get_raw(filename)
+  fetch("http://gist.github.com/raw/#{gist_id}/#{filename}")
+end
+
+def fetch(url)
+  Curl::Easy.perform(url) { |e| e.follow_location = true }.body_str
+end
+
+def gist_id
+  @gist_id ||= request.host[/^(\w+)\./, 1]
 end
