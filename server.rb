@@ -29,7 +29,7 @@ def pull_from_gist(filename)
   extension = File.extname(filename).sub(/^\./,'')
 
   if files.keys.include? filename
-    [TYPES[extension], files[filename]['content']]
+    [TYPES[extension.to_sym], files[filename]['content']]
   else
     compiler, source = COMPILERS[extension.to_sym].map do |source_ext, compiler|
       found_sources = files.keys & ["#{File.basename(filename,".*")}.#{source_ext}", "#{filename}.#{source_ext}"]
