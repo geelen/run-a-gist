@@ -42,7 +42,11 @@ def pull_from_gist(filename)
 end
 
 def files
-  @files ||= JSON.parse(fetch("https://api.github.com/gists/#{gist_id}")).fetch('files')
+  @files ||= if gist_id == 'local'
+    Hash[*Dir.glob(File.dirname(__FILE__) + "/local/*").map { |f| [File.basename(f),{'content' => File.read(f)}] }.flatten]
+  else
+    JSON.parse(fetch("https://api.github.com/gists/#{gist_id}")).fetch('files')
+  end
 rescue KeyError
   {}
 end
